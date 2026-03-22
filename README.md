@@ -41,6 +41,10 @@ From a set of XHS posts for a brand/category and time window, produce distinct t
 
 ## Part B - Agent Loop Build
 
+Detailed prompt documentation:
+
+- `README_PROMPT.md`
+
 ### B1) Prompt (exact text)
 
 Given XHS posts for a single brand/category and time window, identify distinct trends by clustering semantically similar posts. For each trend, generate: 1) a short trend label, 2) a one-sentence description, 3) the evidence posts used, 4) basic metrics including post count and total engagement, 5) a confidence level. Do not invent evidence. If evidence is weak or overlapping, mark confidence low and explain ambiguity.

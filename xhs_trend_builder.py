@@ -410,6 +410,7 @@ def trend_output_schema() -> Dict[str, Any]:
 
 def maybe_label_with_llm(
     posts: List[Post],
+    base_prompt: str,
     fallback_label: str,
     fallback_summary: str,
     fallback_confidence: str,
@@ -436,8 +437,12 @@ def maybe_label_with_llm(
 
     titles = [p.title for p in posts[:8]]
     prompt = (
+        "You are a trend-object decision engine.\n\n"
+        "PRIMARY ASSIGNMENT PROMPT (must follow):\n"
+        f"{base_prompt}\n\n"
+        "CLUSTER LABELING TASK:\n"
         "Given these XHS post titles from one cluster, return strict JSON with keys: "
-        "label, summary, confidence, ai_reasoning. "
+        "label, summary, confidence, ai_reasoning.\n"
         "Rules: label short/distinct; summary one sentence; confidence one of low/medium/high; "
         "do not invent evidence beyond these titles; ai_reasoning should explain why these posts belong together.\n\n"
         f"Titles:\n{json.dumps(titles, ensure_ascii=False, indent=2)}"
@@ -492,6 +497,7 @@ def to_trend_object(
     posts: List[Post],
     token_map: Dict[str, List[str]],
     category: str,
+    base_prompt: str,
     llm_enabled: bool,
     llm_model: str,
     llm_errors: Optional[List[str]],
@@ -510,6 +516,7 @@ def to_trend_object(
     )
     label, summary, confidence, labeling_source, ai_reasoning = maybe_label_with_llm(
         posts=posts,
+        base_prompt=base_prompt,
         fallback_label=heuristic_label,
         fallback_summary=heuristic_summary,
         fallback_confidence=heuristic_confidence,
@@ -654,6 +661,16 @@ def run(
 
     run_id = next_run_label(output_dir)
     category = str(config.get("category", "unknown"))
+    assignment_prompt = str(config.get("prompt", "")).strip()
+    prompt_in_use = bool(assignment_prompt)
+    if prompt_in_use:
+        cli.ok("Prompt", "Assignment prompt found and will be used in decision flow")
+    else:
+        cli.warn("Prompt", "No prompt found in config; using fallback decision text")
+        assignment_prompt = (
+            "Given XHS posts for a single brand/category and time window, identify distinct trends "
+            "with evidence and confidence."
+        )
     llm_config = config.get("llm", {}) or {}
     llm_enabled = bool(llm_config.get("enabled", False))
     llm_model = str(llm_config.get("model", "gpt-4.1-mini")).strip() or "gpt-4.1-mini"
@@ -692,6 +709,7 @@ def run(
             cluster,
             token_map,
             category,
+            assignment_prompt,
             llm_enabled=llm_enabled,
             llm_model=llm_model,
             llm_errors=llm_errors,
@@ -728,6 +746,7 @@ def run(
             "records_retrieved": len(filtered_posts),
         },
         "prompt": config.get("prompt", ""),
+        "prompt_in_use_for_decision": prompt_in_use,
         "generated_at_utc": datetime.now(UTC).isoformat(),
         "decision_logic": {
             "mode": "rules-first with optional LLM label/summary",
@@ -761,6 +780,7 @@ def run(
         "retrieved_post_ids": [p.post_id for p in filtered_posts],
         "decision_output_file": str(trend_output_path),
         "decision_mode": "rules-first with optional LLM",
+        "prompt_in_use_for_decision": prompt_in_use,
         "llm_enabled": llm_enabled,
         "llm_model": llm_model if llm_enabled else None,
         "llm_label_calls_succeeded": llm_hits,
