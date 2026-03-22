@@ -28,14 +28,12 @@ From a set of XHS posts for a brand/category and time window, produce distinct t
 
 ### A4) Success Metrics + Pass Thresholds
 
-1. **Trend distinctness**
-   - Pass: `duplicates/noise = no` in at least 2 of 3 feedback entries.
-2. **Evidence adequacy**
-   - Pass: every trend object includes evidence IDs/snippets + metrics.
-3. **Reviewer quality score**
-   - Pass: average quality score >= 4.0 / 5.
-4. **End-to-end reliability**
-   - Pass: one run produces trend output, run log, and feedback file.
+| Metric | Pass threshold type |
+| --- | --- |
+| Trend distinctness (duplicates/noise) | `Boolean + ratio threshold`: `duplicates/noise = no` in >=2 of 3 reviewer feedback entries |
+| Evidence adequacy per trend object | `Coverage threshold`: 100% of trend objects include evidence IDs/snippets and metrics (`post_count`, engagement) |
+| Reviewer quality score | `Average score threshold`: mean quality score >= 4.0 / 5 across >=3 feedback entries |
+| End-to-end loop reliability | `Binary completion threshold`: at least 1 real run outputs trend objects + run log + feedback file |
 
 ---
 
