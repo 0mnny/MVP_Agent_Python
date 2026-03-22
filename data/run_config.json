@@ -1,0 +1,16 @@
+{
+  "brand": "ALL",
+  "category": "beauty",
+  "time_window": {
+    "start_date": "2026-01-01",
+    "end_date": "2026-03-31"
+  },
+  "max_posts": 50,
+  "top_k_trends": 5,
+  "min_posts_per_trend": 2,
+  "llm": {
+    "enabled": true,
+    "model": "gpt-4.1-mini"
+  },
+  "prompt": "Given XHS posts for a single brand/category and time window, identify distinct trends by clustering semantically similar posts. For each trend, generate: 1) a short trend label, 2) a one-sentence description, 3) the evidence posts used, 4) basic metrics including post count and total engagement, 5) a confidence level. Do not invent evidence. If evidence is weak or overlapping, mark confidence low and explain ambiguity."
+}
